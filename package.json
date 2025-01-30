@@ -88,7 +88,7 @@
     },
     "version": "1.12.11",
     "scripts": {
-        "start": "node server.js",
+        "start": "cross-env NODE_ENV=production node server.js",
         "start:deno": "deno run --allow-run --allow-net --allow-read --allow-write --allow-sys --allow-env server.js",
         "start:bun": "bun server.js",
         "start:no-csrf": "node server.js --disableCsrf",
@@ -96,7 +96,13 @@
         "lint": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js",
         "lint:fix": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js --fix",
         "plugins:update": "node plugins update",
-        "plugins:install": "node plugins install"
+        "plugins:install": "node plugins install",
+        "clean": "sh start.sh",
+        "install:clean": "yarn clean && yarn install",
+        "preinstall": "yarn config set network-timeout 300000",
+        "dev": "cross-env NODE_ENV=development node server.js",
+        "build": "webpack --progress --color --mode=production --config webpack.config.cjs",
+        "build:dev": "webpack --progress --color --mode=development --config webpack.config.cjs"
     },
     "bin": {
         "sillytavern": "./server.js"
@@ -133,6 +139,12 @@
         "@types/write-file-atomic": "^4.0.3",
         "@types/yargs": "^17.0.33",
         "@types/yauzl": "^2.10.3",
-        "eslint": "^8.57.0"
+        "cross-env": "^7.0.3",
+        "eslint": "^8.57.0",
+        "terser-webpack-plugin": "^5.3.11",
+        "webpack-cli": "^6.0.1"
+    },
+    "resolutions": {
+        "webpack": "^5.97.1"
     }
 }

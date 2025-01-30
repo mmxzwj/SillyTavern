@@ -1,9 +1,9 @@
-import process from 'node:process';
-import path from 'node:path';
-import TerserPlugin from 'terser-webpack-plugin';
+const process = require('process');
+const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 /** @type {import('webpack').Configuration} */
-export const publicLibConfig = {
+const publicLibConfig = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './public/lib.js',
     cache: {
@@ -32,12 +32,32 @@ export const publicLibConfig = {
         minimize: process.env.NODE_ENV === 'production',
         minimizer: [new TerserPlugin()],
         splitChunks: {
-            chunks: 'all',
-        }
+            chunks: 'async',
+            minSize: 20000,
+            minChunks: 1,
+            maxAsyncRequests: 30,
+            maxInitialRequests: 30,
+            enforceSizeThreshold: 50000,
+            cacheGroups: {
+                defaultVendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10,
+                    reuseExistingChunk: true,
+                },
+                default: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true,
+                },
+            },
+        },
     },
     output: {
         path: path.resolve(process.cwd(), 'dist'),
         filename: 'lib.js',
         libraryTarget: 'module',
+        chunkFilename: '[name].[contenthash].js',
     },
 };
+
+module.exports = publicLibConfig; 

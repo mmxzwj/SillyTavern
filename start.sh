@@ -1,32 +1,39 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# Make sure pwd is the directory of the script
-cd "$(dirname "$0")"
+# 输出带颜色的文本函数
+print_color() {
+    local color=$1
+    local text=$2
+    echo -e "\033[${color}m${text}\033[0m"
+}
 
-if ! command -v npm &> /dev/null
-then
-    read -p "npm is not installed. Do you want to install nodejs and npm? (y/n)" choice
-    case "$choice" in
-      y|Y )
-        echo "Installing nvm..."
-        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-        source ~/.bashrc
-        nvm install --lts
-        nvm use --lts;;
-      n|N )
-        echo "Nodejs and npm will not be installed."
-        exit;;
-      * )
-        echo "Invalid option. Nodejs and npm will not be installed."
-        exit;;
-    esac
+# 记录开始时间
+print_color "36" "=== 开始执行脚本 ==="
+total_start_time=$(date +%s)
+
+# 检查yarn是否安装
+if ! command -v yarn &> /dev/null; then
+    print_color "31" "错误: 未找到yarn。请先安装yarn。"
+    print_color "33" "可以使用 'npm install -g yarn' 安装"
+    exit 1
 fi
 
-echo "Installing Node Modules..."
-export NODE_ENV=production
-npm i --no-audit --no-fund --loglevel=error --no-progress --omit=dev
+# 编译项目
+print_color "33" "\n正在编译项目..."
+build_start_time=$(date +%s)
+yarn build
+build_end_time=$(date +%s)
+build_duration=$((build_end_time - build_start_time))
+print_color "32" "编译完成! 耗时: ${build_duration} 秒"
 
-echo "Entering SillyTavern..."
-node "server.js" "$@"
+# 启动服务器
+print_color "33" "\n正在启动服务器..."
+yarn start
+
+# 计算总时间
+total_end_time=$(date +%s)
+total_duration=$((total_end_time - total_start_time))
+
+print_color "36" "\n=== 脚本执行完成 ==="
+print_color "32" "总耗时: ${total_duration} 秒"
+print_color "32" "编译耗时: ${build_duration} 秒"
